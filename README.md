@@ -24,7 +24,7 @@ Les cartes sont fournies sous forme de code à 2 caractères :
 
 Exemples : `AS` (As de pique), `TD` (10 de carreau), `7H`, `KC`.
 
-La fonction `parseCard(code)` convertit un code en objet `Card`.
+La fonction `analyzeCard(code)` convertit un code en objet `Card`.
 
 ---
 
@@ -136,23 +136,6 @@ const result = compareHandRank(a, b);
 if (result > 0) console.log("a gagne");
 else if (result < 0) console.log("b gagne");
 else console.log("égalité");
-```
-
-### Déterminer les gagnants
-
-```ts
-import { winners } from "./src/poker/winners";
-import { analyzeCard } from "./src/poker/parse";
-
-const board = ["AS","KS","QS","JS","TS"].map(analyzeCard);
-const players = [
-  { id: "p1", hole: ["2C","3D"].map(analyzeCard) },
-  { id: "p2", hole: ["AH","AD"].map(analyzeCard) }
-];
-
-const res = winners(board, players);
-console.log(res.winners); // ["p2"]
-console.log(res.rank);    // HandRank de la main gagnante
 ```
 
 ### Tests
