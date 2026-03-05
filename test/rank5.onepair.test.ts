@@ -11,8 +11,6 @@ describe("rank5 - one pair evaluation", () => {
 
         const result = rank5(cards);
 
-        console.log(result);
-
         expect(result.category).toBe(Category.OnePair);
         expect(result.tiebreak).toEqual([7, 14, 13, 2]);
         expect(result.chosen5.map(x => x.code)).toEqual(["7S", "7D", "AS", "KD", "2H"]);

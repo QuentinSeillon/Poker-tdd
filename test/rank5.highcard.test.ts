@@ -16,7 +16,6 @@ describe("rank5 - high card evaluation", () => {
 
         const result = rank5(cards);
 
-        // console.log(result);
 
         expect(result.category).toBe(Category.HighCard);
         expect(result.tiebreak).toEqual([14, 13, 7, 4, 2]);

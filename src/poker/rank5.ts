@@ -35,6 +35,8 @@ export function rank5(cards: readonly Card[]): HandRank {
     const byRank = groupByRank(cards);
     const { pairs, trips, quads } = findMultiples(byRank);
 
+    const flush = evaluateFlush(cards, byRank);
+    if (flush) return flush;
 
     const three = evaluateThreeOfKind(cards, byRank, trips);
     if (three) return three;
@@ -206,4 +208,36 @@ function computeStraightInfo(
     }
 
     return { isStraight: false, high: 0, order: [] };
+}
+
+function evaluateFlush(cards: readonly Card[], byRank: Map<number, Card[]>): HandRank | null {
+    const suit = cards[0]!.suit;
+    const isFlush = cards.every(c => c.suit === suit);
+    if (!isFlush) return null;
+
+    // Si suite + meme type => Straight Flush
+    const uniqueRanksAsc = [...byRank.keys()].sort((a, b) => a - b);
+    if (uniqueRanksAsc.length === 5) {
+        const info = computeStraightInfo(uniqueRanksAsc);
+        if (info.isStraight) {
+            const chosen5 = info.order.map(r => {
+                const group = byRank.get(r) ?? [];
+                return sortCardsByType(group)[0]!;
+            });
+
+            return {
+                category: Category.StraightFlush,
+                tiebreak: [info.high],
+                chosen5
+            };
+        }
+    }
+
+    // flush classique
+    const sorted = sortCardsByType([...cards]);
+    return {
+        category: Category.Flush,
+        tiebreak: sorted.map(c => c.rank),
+        chosen5: sorted
+    };
 }
