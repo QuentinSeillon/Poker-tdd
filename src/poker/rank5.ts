@@ -35,6 +35,9 @@ export function rank5(cards: readonly Card[]): HandRank {
     const byRank = groupByRank(cards);
     const { pairs, trips, quads } = findMultiples(byRank);
 
+    const full = evaluateFullHouse(byRank, trips, pairs);
+    if (full) return full;
+
     const flush = evaluateFlush(cards, byRank);
     if (flush) return flush;
 
@@ -239,5 +242,25 @@ function evaluateFlush(cards: readonly Card[], byRank: Map<number, Card[]>): Han
         category: Category.Flush,
         tiebreak: sorted.map(c => c.rank),
         chosen5: sorted
+    };
+}
+
+function evaluateFullHouse(
+    byRank: Map<number, Card[]>,
+    trips: number[],
+    pairs: number[]
+): HandRank | null {
+    if (trips.length !== 1 || pairs.length !== 1) return null;
+
+    const tripRank = trips[0]!;
+    const pairRank = pairs[0]!;
+
+    const tripCards = sortCardsByType(byRank.get(tripRank) ?? []);
+    const pairCards = sortCardsByType(byRank.get(pairRank) ?? []);
+
+    return {
+        category: Category.FullHouse,
+        tiebreak: [tripRank, pairRank],
+        chosen5: [...tripCards, ...pairCards]
     };
 }
