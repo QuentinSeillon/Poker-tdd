@@ -145,6 +145,7 @@ Pour lancer l’intégralité de la suite :
 ```
 npm install
 npm run test
+npm run test:ui
 ```
 
 Les tests sont répartis par fichier selon les fonctionnalités (parsing,
