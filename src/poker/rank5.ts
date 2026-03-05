@@ -44,6 +44,28 @@ export function rank5(cards: readonly Card[]): HandRank {
         if (group.length === 2) pairs.push(rank);
     }
 
+
+    const trips: number[] = [];
+    for (const [rank, group] of byRank.entries()) {
+        if (group.length === 3) trips.push(rank);
+    }
+
+    // Si on a une tiers (Three of a Kind)
+    if (trips.length === 1) {
+        const tripRank = trips[0]!;
+        const tripCards = sortCardsByType(byRank.get(tripRank) ?? []);
+
+        const kickers = sortCardsByType(
+            [...cards].filter(c => c.rank !== tripRank)
+        );
+
+        return {
+            category: Category.ThreeKind,
+            tiebreak: [tripRank, ...kickers.slice(0, 2).map(k => k.rank)],
+            chosen5: [...tripCards, ...kickers.slice(0, 2)]
+        };
+    }
+
     // Si on a 2 paires
     if (pairs.length === 2) {
         const highPairRank = Math.max(...pairs);
