@@ -35,6 +35,9 @@ export function rank5(cards: readonly Card[]): HandRank {
     const byRank = groupByRank(cards);
     const { pairs, trips, quads } = findMultiples(byRank);
 
+    const four = evaluateFourKind(cards, byRank, quads);
+    if (four) return four;
+
     const full = evaluateFullHouse(byRank, trips, pairs);
     if (full) return full;
 
@@ -262,5 +265,26 @@ function evaluateFullHouse(
         category: Category.FullHouse,
         tiebreak: [tripRank, pairRank],
         chosen5: [...tripCards, ...pairCards]
+    };
+}
+
+function evaluateFourKind(
+    cards: readonly Card[],
+    byRank: Map<number, Card[]>,
+    quads: number[]
+): HandRank | null {
+    if (quads.length !== 1) return null;
+
+    const quadRank = quads[0]!;
+    const quadCards = sortCardsByType(byRank.get(quadRank) ?? []);
+
+    const kicker = sortCardsByType(
+        [...cards].filter(c => c.rank !== quadRank)
+    )[0]!;
+
+    return {
+        category: Category.FourKind,
+        tiebreak: [quadRank, kicker.rank],
+        chosen5: [...quadCards, kicker]
     };
 }
