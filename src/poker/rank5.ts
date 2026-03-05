@@ -18,6 +18,16 @@ export type HandRank = {
     chosen5: Card[];
 };
 
+
+const SUIT_ORDER: Record<Card["suit"], number> = { S: 4, H: 3, D: 2, C: 1 };
+
+function sortCardsByType(cards: Card[]): Card[] {
+    return [...cards].sort((a, b) => {
+        if (a.rank !== b.rank) return b.rank - a.rank;
+        return SUIT_ORDER[b.suit] - SUIT_ORDER[a.suit];
+    });
+}
+
 export function rank5(cards: readonly Card[]): HandRank {
     if (cards.length !== 5) throw new Error("rank5 expects exactly 5 cards");
 
@@ -29,20 +39,41 @@ export function rank5(cards: readonly Card[]): HandRank {
         byRank.set(card.rank, arr);
     }
 
-
     const pairs: number[] = [];
     for (const [rank, group] of byRank.entries()) {
         if (group.length === 2) pairs.push(rank);
     }
 
+    // Si on a 2 paires
+    if (pairs.length === 2) {
+        const highPairRank = Math.max(...pairs);
 
+        console.log("High pair rank:", highPairRank);
+        const lowPairRank = Math.min(...pairs);
+        console.log("Low pair rank:", lowPairRank);
+
+        const highPairCards = sortCardsByType(byRank.get(highPairRank) ?? []);
+        const lowPairCards = sortCardsByType(byRank.get(lowPairRank) ?? []);
+
+        const kicker = sortCardsByType(
+            [...cards].filter(card => card.rank !== highPairRank && card.rank !== lowPairRank)
+        )[0]!;
+
+        return {
+            category: Category.TwoPair,
+            tiebreak: [highPairRank, lowPairRank, kicker.rank],
+            chosen5: [...highPairCards, ...lowPairCards, kicker]
+        };
+    }
+
+    // Si on a une seul paire
     if (pairs.length === 1) {
         const pairRank = pairs[0]!;
-        const pairCards = [...(byRank.get(pairRank) ?? [])];
+        const pairCards = sortCardsByType(byRank.get(pairRank) ?? []);
 
-        const kickers = [...cards]
-            .filter(c => c.rank !== pairRank)
-            .sort((a, b) => b.rank - a.rank);
+        const kickers = sortCardsByType(
+            [...cards].filter(c => c.rank !== pairRank)
+        );
 
         return {
             category: Category.OnePair,
@@ -52,7 +83,7 @@ export function rank5(cards: readonly Card[]): HandRank {
     }
 
 
-    const sorted = [...cards].sort((a, b) => b.rank - a.rank);
+    const sorted = sortCardsByType([...cards]);
     return {
         category: Category.HighCard,
         tiebreak: sorted.map(c => c.rank),
